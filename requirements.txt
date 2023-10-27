@@ -53,3 +53,4 @@ validators==0.22.0
 virtualenv==20.24.5
 watchdog==3.0.0
 zipp==3.17.0
+xgboost==2.0.0
