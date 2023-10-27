@@ -13,4 +13,4 @@
 
 **Vídeo: [https://youtu.be/0UH8-w3cx7g?si=ltf5K0kS2hROEODg](https://youtu.be/0UH8-w3cx7g?si=ltf5K0kS2hROEODg)**
 
-**Reporte Técnico: [https://deepnote.com/publish/Fundamentos-de-Analitica-9bf70f57-8204-4e96-942e-40df6124529](https://deepnote.com/publish/Fundamentos-de-Analitica-9bf70f57-8204-4e96-942e-40df61245296)6**
+**Reporte Técnico: [https://deepnote.com/publish/Fundamentos-de-Analitica-9bf70f57-8204-4e96-942e-40df61245296](https://deepnote.com/publish/Fundamentos-de-Analitica-9bf70f57-8204-4e96-942e-40df61245296)**
