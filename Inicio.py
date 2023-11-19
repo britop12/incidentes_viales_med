@@ -17,5 +17,17 @@ def main():
     Esta plataforma ha sido desarrollada utilizando datos abiertos proporcionados por la Alcaldía de Medellín, y tiene como objetivo ser una herramienta valiosa para la prevención y gestión de la seguridad vial en la ciudad.
     ''')
 
+    st.write('''
+             #### Mapa Interactivo
+             Explora el mapa interactivo para visualizar la distribución geográfica de los choques en Medellín. Esta herramienta te permite identificar áreas con mayores índices de incidentes, ofreciendo una perspectiva clara de los puntos críticos en la ciudad. Utiliza los controles para navegar y obtener detalles específicos por barrios o distritos.
+                ''')
+    
+    st.write('''
+             #### Predicción de Accidentes
+             Utiliza esta herramienta para predecir la cantidad de choques en Medellín para un periodo específico. Simplemente ingresa la fecha de inicio, la fecha de fin y la ventana de tiempo deseada para la predicción. Nuestro modelo utiliza datos históricos y tendencias para estimar el número de incidentes, ayudándote a planificar mejor las medidas de seguridad vial.
+                ''')
+
+             
+
 if __name__ == '__main__':
     main()

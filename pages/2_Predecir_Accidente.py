@@ -28,20 +28,12 @@ def main():
     st.title('Predicción de incidentes viales en la ciudad de Medellín')
     start = st.date_input('Fecha inicial', dt.date(2023, 10, 27))
     end = st.date_input('Fecha final')
-    class_accident = st.selectbox('¿Qué tipo de accidente quieres predecir:',
-                                  ['Caida Ocupante', 'Choque', 'Atropello',
-                                   'Volcamiento', 'Incendio', 'Otro'])
 
     window = st.selectbox('¿Que ventana de tiempo desea utilizar?',
                           ['Diaria', 'Semanal', 'Mensual'])
 
     map_class_accident = {
         'Choque': 'choque',
-        'Atropello': 'atropello',
-        'Caida Ocupante': 'caida',
-        'Otro': 'otro',
-        'Volcamiento': 'volcamiento',
-        'Incendio': 'incendio'
     }
     input_data = []
 
@@ -55,11 +47,9 @@ def main():
                     'day_of_week': date.weekday(),
                     'is_weekend': (date.dayofweek in [5, 6])*1,
                     'is_holiday': date in holidays.CO(),
-                    'is_fortnight': is_fortnight(date.month, date.day),
                     'quarter': date.quarter,
                     'weekofyear': date.weekofyear,
-                    'sin_week': np.sin(2*np.pi*date.weekday()/7),
-                    'cos_week': np.cos(2*np.pi*date.weekday()/7),
+                    'is_fortnight': is_fortnight(date.month, date.day), 
                     'date': date,
                 }
                 data['lag_1'] = df_diary[(df_diary['year'] == 2019) & (
@@ -88,19 +78,21 @@ def main():
                 
                 data['rolling_mean_3'] = df_diary[(df_diary['year'] == 2019) & (
                     df_diary['month'] == data['month']) & (df_diary['day'] == data['day'])]['rolling_mean_3'].values[0]
+                data['sin_week'] = np.sin(2*np.pi*date.weekday()/7)
+                data['cos_week'] = np.cos(2*np.pi*date.weekday()/7)
                 input_data.append(data)
 
             df = pd.DataFrame(input_data)
+
             y = model_diary.predict(df.drop(columns=['date']))
             y[y < 0] = 0
             df = pd.concat([df, pd.DataFrame(y.astype(int))], axis=1)
-            df.rename(columns={
-                0: 'choque', 1: 'atropello', 2: 'caida',
-                3: 'otro', 4: 'volcamiento', 5: 'incendio'
-            },
-                inplace=True)
+            df['date'] = df['date'].dt.strftime('%d/%m/%Y')
+            df.rename(columns={0: 'Predicción de choques', 'date': "Fecha"}, inplace=True)
+            df.index = df['Fecha']
+
+            st.write(df[['Predicción de choques']])
             
-            st.line_chart(df, x='date', y=map_class_accident[class_accident])
 
         if window == 'Semanal':
             for date in pd.date_range(start, end):
@@ -108,17 +100,13 @@ def main():
                     'year': date.year,
                     'weekofyear': date.weekofyear,
                     'is_holiday': date in holidays.CO(),
+                    'is_holiday_next_week': date + dt.timedelta(days=7) in holidays.CO(),
                     'is_start_month': date.is_month_start,
                     'is_end_month': date.is_month_end,
                     'is_fortnight': date.day in [15, 30],
                     'date': date,
                 }
-
-                data["date_next_week"] = date + dt.timedelta(days=7)
-                data['is_holiday_next_week'] = data["date_next_week"] in holidays.CO()
                 
-                # Delete date_next_week
-                del data["date_next_week"]
 
                 data['lag_1'] = df_weekly[(df_weekly['year'] == 2019) & (
                     df_weekly['weekofyear'] == data['weekofyear'])]['lag_1'].values[0]
@@ -141,14 +129,22 @@ def main():
             y = model_weekly.predict(df.drop(columns=['date']))
             y[y < 0] = 0
             df = pd.concat([df, pd.DataFrame(y.astype(int))], axis=1)
-            df.rename(columns={
-                0: 'choque', 1: 'atropello', 2: 'caida',
-                3: 'otro', 4: 'volcamiento', 5: 'incendio'
-            },
-                inplace=True)
+            df['Fecha'] = pd.to_datetime(df['date'], format='%d/%m/%Y')
+            df.rename(columns={0: 'Predicción de choques',}, inplace=True)
+            df['Semana del año'] = df['Fecha'].dt.strftime('%U')
+            df_semanal = df.groupby('Semana del año').agg({'Fecha': ['min', 'max'], "Predicción de choques": 'mean'})
 
+            df_semanal.columns = ['_'.join(col).strip() for col in df_semanal.columns.values]
+
+            # Convertir el promedio a entero
+            df_semanal['Predicción de choques_mean'] = df_semanal['Predicción de choques_mean'].astype(int)
+            df_semanal['Fecha_min'] = df_semanal['Fecha_min'].dt.strftime('%d/%m/%Y')
+            df_semanal['Fecha_max'] = df_semanal['Fecha_max'].dt.strftime('%d/%m/%Y')
+
+            # Renombrar las columnas
+            df_semanal.columns = ['Fecha Inicial', 'Fecha Final', "Predicción de choques"]
+            st.write(df_semanal)
             
-            st.line_chart(df, x='weekofyear', y=map_class_accident[class_accident])
 
         if window == "Mensual":
             for date in pd.date_range(start, end):
@@ -186,18 +182,12 @@ def main():
             y = model_monthly.predict(df.drop(columns=['date']))
             y[y < 0] = 0
             df = pd.concat([df, pd.DataFrame(y.astype(int))], axis=1)
-            df.rename(columns={
-                0: 'choque', 1: 'atropello', 2: 'caida',
-                3: 'otro', 4: 'volcamiento', 5: 'incendio'
-            },
-                inplace=True)
-            
-            ### agregar columna para mostrar año y mes
-            df['month'] = df['date'].dt.month_name()
-            df['year'] = df['date'].dt.year
-            df['date'] = df['month'] + ' ' + df['year'].astype(str)
+            df['date'] = df['date'].dt.strftime('%m/%Y')
+            df.rename(columns={0: 'Predicción de choques', 'date': "Mes"}, inplace=True)
+            df.index = df['Mes']
 
-            st.line_chart(df, x='date', y=map_class_accident[class_accident])
+            st.write(df[['Predicción de choques']])
+           
 
 if __name__ == '__main__':
     main()

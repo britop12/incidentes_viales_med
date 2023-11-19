@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 st.set_page_config(page_title = "Mapa Interactivo")
 def main():
-    st.title('Mapa interactivo de la accidentalidad en la ciudad de Medellín')
+    st.title('Mapa interactivo de choques en los barrios de la ciudad de Medellín')
 
     with open("maps/map.html", "r") as f:
         map_html = f.read()
